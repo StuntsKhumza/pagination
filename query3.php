@@ -1,9 +1,20 @@
 <?php
+require ($_SERVER['DOCUMENT_ROOT'] . "configs/db_pagination.php" ) ;
 
 try {
 
     //get datase 
-    $dbh = connect();
+    /*
+    from the config file:
+    
+    $servername
+    $username
+    $password
+    $dbname
+    $table
+
+    */
+    $dbh = connect($servername, $username, $password, $dbname);
     
     // How many items to list per page
     $limit = 10;
@@ -12,7 +23,7 @@ try {
         die('Unable to connect to database.');
     }
     
-    $total = getCount($dbh);
+    $total = getCount($dbh, $table);
 
     // How many pages will there be
     $pages = ceil($total / $limit);
@@ -43,7 +54,7 @@ try {
                 'end'=>$end,
                 'total'=>$total,
                 'currentPage'=>$page,
-                'data'=>getDataSet($dbh,$limit, $offset)
+                'data'=>getDataSet($dbh,$limit, $offset, $table)
             )
             );
 
@@ -51,18 +62,14 @@ try {
     echo '<p>', $e->getMessage(), '</p>';
 }
 
-function connect() {
+function connect($server, $username, $password, $dbname) {
 
-    $servername = "localhost";
-    $username = "username";
-    $password = "password";
-    $dbname = "databse name";
     $s = "";
     $dbh = null;
     try {
 
         // Create connection
-        $dbh = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+        $dbh = new PDO("mysql:host=$server;dbname=$dbname", $username, $password);
 
         // set the PDO error mode to exception
         $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -74,20 +81,19 @@ function connect() {
     }
 }
 
-function getCount($dbh){
+function getCount($dbh, $table){
    
      // Find out how many items are in the table
     $total = $dbh->query('
         SELECT
             COUNT(*)
-        FROM
-            `table`
-    ')->fetchColumn();
+        FROM `'.
+            $table . '`')->fetchColumn();
     
     return $total;
 }
 
-function getDataSet($dbh, $limit, $offset){
+function getDataSet($dbh, $limit, $offset, $table){
     
     $result = null;
     
@@ -95,14 +101,15 @@ function getDataSet($dbh, $limit, $offset){
     $stmt = $dbh->prepare('
        SELECT
             *
-        FROM
-            `table`  
+        FROM '.
+            $table . '
         LIMIT
             :limit
         OFFSET
             :offset
             
     ');
+
 
     // Bind the query params
     $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
