@@ -15,7 +15,11 @@ try {
 
     */
     $dbh = connect($servername, $username, $password, $dbname);
+     $q = "";
     
+    if(isset($_GET['q'])){
+        $q = $_GET['q'];
+    }   
     // How many items to list per page
     $limit = 10;
     
@@ -23,7 +27,7 @@ try {
         die('Unable to connect to database.');
     }
     
-    $total = getCount($dbh, $table);
+    $total = getCount($dbh, $table, $q);
 
     // How many pages will there be
     $pages = ceil($total / $limit);
@@ -35,7 +39,9 @@ try {
             'min_range' => 1,
         ),
     )));
-
+    
+   
+    
     // Calculate the offset for the query
     $offset = ($page - 1) * $limit;
 
@@ -54,7 +60,7 @@ try {
                 'end'=>$end,
                 'total'=>$total,
                 'currentPage'=>$page,
-                'data'=>getDataSet($dbh,$limit, $offset, $table)
+                'data'=>getDataSet($dbh,$limit, $offset, $table, $q)
             )
             );
 
@@ -81,34 +87,34 @@ function connect($server, $username, $password, $dbname) {
     }
 }
 
-function getCount($dbh, $table){
+function getCount($dbh, $table, $q){
    
      // Find out how many items are in the table
-    $total = $dbh->query('
+    $total = $dbh->query("
         SELECT
             COUNT(*)
-        FROM `'.
-            $table . '`')->fetchColumn();
-    
+        FROM `".
+            $table . "` WHERE `DESCRIPTION` LIKE '%" .$q. "%'")->fetchColumn();
+ 
     return $total;
 }
 
-function getDataSet($dbh, $limit, $offset, $table){
+function getDataSet($dbh, $limit, $offset, $table, $q){
     
     $result = null;
     
     // Prepare the paged query
-    $stmt = $dbh->prepare('
+    $stmt = $dbh->prepare("
        SELECT
             *
-        FROM '.
-            $table . '
+        FROM `".
+            $table ."` WHERE `DESCRIPTION` LIKE '%" .$q. "%'
         LIMIT
             :limit
         OFFSET
             :offset
             
-    ');
+    ");
 
 
     // Bind the query params

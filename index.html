@@ -28,8 +28,8 @@ and open the template in the editor.
             $scope.dataQuery = [];
 
             $scope.links = [];
-
-            loadData("");
+            $scope.search = "";
+           // loadData("");
 
             function loadData(query) {
 
@@ -46,6 +46,12 @@ and open the template in the editor.
                     })
             }
 
+            $scope.search_action = function(){
+
+                loadData("?q="+$scope.search);
+
+            }
+
             function createLinks(list) {
 
                 for (var i = 0; i < list.pageCount; i++) {
@@ -56,7 +62,7 @@ and open the template in the editor.
 
             $scope.nav = function (page) {
 
-                loadData("?page=" + page);
+                loadData("?q="+$scope.search + "&page=" + page);
             }
 
         })
@@ -70,21 +76,20 @@ and open the template in the editor.
 <body ng-app="main" ng-controller="cont">
     <div class="container">
 
-        <nav aria-label="Page navigation">
+       <div class="row">
+           <div class="col-md-12">
+               
+               <div class="jumbotron">
+                   <b>Search: </b>
+                   <input type="text" class="form-control input-md" ng-model="search">
+                   <br>
+                   <input type="button" class="btn btn-md btn-primary" ng-click="search_action()" ng-disabled="search.length <1" value="Search">
+                   </div>
+               <hr>
+           </div>
+       </div>
 
-            <ul class="pagination">
-
-                <li ng-repeat="data in links" ng-class="{'active' :dataQuery.currentPage == data.page}">
-
-                    <a href="#" ng-click="nav($index + 1)">{{$index + 1}}</a>
-
-                </li>
-
-            </ul>
-
-        </nav>
-
-        <table class="table">
+        <table class="table table-striped" >
             <thead>
 
                 <th>#</th>
@@ -100,7 +105,19 @@ and open the template in the editor.
             </tbody>
         </table>
 
+ <nav aria-label="Page navigation">
 
+            <ul class="pagination">
+
+                <li ng-repeat="data in links" ng-class="{'active' :dataQuery.currentPage == data.page}">
+
+                    <a href="#" ng-click="nav($index + 1)">{{$index + 1}}</a>
+
+                </li>
+
+            </ul>
+
+        </nav>
 
         <h6>Showing page {{dataQuery.currentPage}} of {{dataQuery.pageCount}} </h6>
 
