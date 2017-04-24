@@ -1,4 +1,6 @@
 <?php
+
+//add you database connection here
 require ($_SERVER['DOCUMENT_ROOT'] . "configs/db_pagination.php" ) ;
 
 try {
